@@ -1,0 +1,28 @@
+<header class="topo">
+  <div class="topo__conteudo">
+    <a class="marca" routerLink="/">
+      <span class="marca__logo" aria-hidden="true">P</span>
+      <span>
+        <strong>Painel Comercial</strong>
+        <small>Vendas, estoque e financeiro</small>
+      </span>
+    </a>
+
+    <nav class="abas" aria-label="Módulos">
+      @for (modulo of modulos; track modulo.rota) {
+        <a
+          class="aba"
+          [routerLink]="modulo.rota"
+          routerLinkActive="aba--ativa"
+          ariaCurrentWhenActive="page"
+        >
+          {{ modulo.titulo }}
+        </a>
+      }
+    </nav>
+  </div>
+</header>
+
+<main class="conteudo">
+  <router-outlet />
+</main>

@@ -1,0 +1,123 @@
+.grade {
+  display: grid;
+  grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.coluna {
+  display: grid;
+  gap: 20px;
+}
+
+.tipo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-muted);
+}
+
+.tipo__opcao {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.tipo__opcao input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.tipo__opcao:has(input:checked) {
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.tipo__opcao--entrada:has(input:checked) {
+  color: var(--positive);
+}
+
+.tipo__opcao--saida:has(input:checked) {
+  color: var(--negative);
+}
+
+.tipo__opcao:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.resultado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-color: color-mix(in srgb, var(--positive) 45%, var(--border));
+}
+
+.resultado__titulo {
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 650;
+}
+
+.resultado__detalhe {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.resultado__estoque {
+  display: grid;
+  justify-items: end;
+  flex-shrink: 0;
+}
+
+.resultado__estoque span {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.resultado__estoque strong {
+  color: var(--positive);
+  font-size: 2rem;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.resultado__estoque small {
+  color: var(--text-muted);
+}
+
+.atualizado > td {
+  background: var(--positive-soft);
+}
+
+.codigo,
+.data {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+  .grade {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

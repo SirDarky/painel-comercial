@@ -1,0 +1,60 @@
+@api = http://localhost:5230/api
+
+### 1. Comissões calculadas a partir de Data/vendas.json
+GET {{api}}/comissoes
+
+### 1. Comissões para outras vendas (testando os limites das faixas)
+POST {{api}}/comissoes/calculo
+Content-Type: application/json
+
+{
+  "vendas": [
+    { "vendedor": "Teste", "valor": 99.99 },
+    { "vendedor": "Teste", "valor": 100.00 },
+    { "vendedor": "Teste", "valor": 499.99 },
+    { "vendedor": "Teste", "valor": 500.00 }
+  ]
+}
+
+### 2. Produtos com o estoque atual
+GET {{api}}/estoque/produtos
+
+### 2. Entrada de mercadoria
+POST {{api}}/estoque/movimentacoes
+Content-Type: application/json
+
+{
+  "codigoProduto": 101,
+  "tipo": "Entrada",
+  "quantidade": 50,
+  "descricao": "Compra de fornecedor"
+}
+
+### 2. Saída de mercadoria (envie de novo: a mesma Idempotency-Key não lança duas vezes)
+POST {{api}}/estoque/movimentacoes
+Content-Type: application/json
+Idempotency-Key: 6f1c2a9e-0b7d-4d1e-9c3a-2b5f8e7d4a10
+
+{
+  "codigoProduto": 102,
+  "tipo": "Saida",
+  "quantidade": 25,
+  "descricao": "Venda ao cliente"
+}
+
+### 2. Saída maior que o estoque (422)
+POST {{api}}/estoque/movimentacoes
+Content-Type: application/json
+
+{
+  "codigoProduto": 105,
+  "tipo": "Saida",
+  "quantidade": 1000,
+  "descricao": "Venda ao cliente"
+}
+
+### 2. Histórico de movimentações
+GET {{api}}/estoque/movimentacoes
+
+### 3. Juros na data de hoje (2,5% ao dia de atraso)
+GET {{api}}/juros?valor=1000&dataVencimento=2026-09-26

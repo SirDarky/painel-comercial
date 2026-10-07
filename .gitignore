@@ -1,0 +1,5 @@
+# Configurações locais de editores e ferramentas
+.claude/
+.vs/
+.idea/
+*.user

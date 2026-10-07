@@ -1,0 +1,161 @@
+<div class="pagina">
+  <header class="cabecalho">
+    <span class="sobretitulo">Vendas</span>
+    <h1>Comissões por vendedor</h1>
+    <p>
+      A comissão de cada venda é calculada conforme a faixa de valor, a partir das vendas
+      registradas no arquivo de vendas. O total de cada vendedor é arredondado para centavos.
+    </p>
+  </header>
+
+  <ul class="faixas" aria-label="Regras de comissão">
+    <li><span class="badge">0%</span> Vendas abaixo de R$ 100,00</li>
+    <li><span class="badge badge--destaque">1%</span> De R$ 100,00 a R$ 499,99</li>
+    <li><span class="badge badge--positivo">5%</span> A partir de R$ 500,00</li>
+  </ul>
+
+  @if (erro(); as mensagem) {
+    <div class="alerta" role="alert">{{ mensagem }}</div>
+  } @else if (relatorio(); as relatorio) {
+    <div class="indicadores">
+      <div class="card indicador">
+        <span>Vendedores</span>
+        <strong>{{ relatorio.vendedores.length }}</strong>
+      </div>
+      <div class="card indicador">
+        <span>Vendas</span>
+        <strong>{{ quantidadeVendas() }}</strong>
+      </div>
+      <div class="card indicador">
+        <span>Total vendido</span>
+        <strong>{{ relatorio.totalVendido | currency }}</strong>
+      </div>
+      <div class="card indicador indicador--destaque">
+        <span>Total de comissões</span>
+        <strong>{{ relatorio.totalComissao | currency }}</strong>
+      </div>
+    </div>
+
+    <section class="card">
+      <header class="card__cabecalho">
+        <h2>Comissão de cada vendedor</h2>
+        @if (dadosPersonalizados()) {
+          <span class="badge badge--destaque">Vendas informadas no editor</span>
+        } @else {
+          <span class="badge">Fonte: vendas.json</span>
+        }
+      </header>
+
+      <div class="tabela">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Vendedor</th>
+              <th scope="col" class="num">Vendas</th>
+              <th scope="col" class="num">Total vendido</th>
+              <th scope="col" class="num">Comissão</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (vendedor of relatorio.vendedores; track vendedor.vendedor; let i = $index) {
+              @let aberto = vendedoresAbertos().has(vendedor.vendedor);
+              <tr>
+                <th scope="row">
+                  <button
+                    type="button"
+                    class="expandir"
+                    [attr.aria-expanded]="aberto"
+                    [attr.aria-controls]="'vendas-' + i"
+                    (click)="alternarVendedor(vendedor.vendedor)"
+                  >
+                    <span class="seta" aria-hidden="true"></span>
+                    {{ vendedor.vendedor }}
+                  </button>
+                </th>
+                <td class="num">{{ vendedor.quantidadeVendas }}</td>
+                <td class="num">{{ vendedor.totalVendido | currency }}</td>
+                <td class="num"><strong>{{ vendedor.totalComissao | currency }}</strong></td>
+              </tr>
+              @if (aberto) {
+                <tr class="detalhe" [id]="'vendas-' + i">
+                  <td colspan="4">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th scope="col">Venda</th>
+                          <th scope="col" class="num">Valor</th>
+                          <th scope="col">Faixa</th>
+                          <th scope="col" class="num">Comissão</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (venda of vendedor.vendas; track $index) {
+                          <tr>
+                            <td>{{ $index + 1 }}ª</td>
+                            <td class="num">{{ venda.valor | currency }}</td>
+                            <td>
+                              <span
+                                class="badge"
+                                [class.badge--destaque]="venda.percentualComissao === 1"
+                                [class.badge--positivo]="venda.percentualComissao === 5"
+                                >{{ venda.percentualComissao }}%</span
+                              >
+                            </td>
+                            <td class="num">{{ venda.comissao | currency: 'BRL' : 'symbol' : '1.2-4' }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row">Total</th>
+              <td class="num">{{ quantidadeVendas() }}</td>
+              <td class="num">{{ relatorio.totalVendido | currency }}</td>
+              <td class="num">{{ relatorio.totalComissao | currency }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <p class="card__rodape">
+        Clique no nome do vendedor para ver cada venda. A comissão por venda aparece sem
+        arredondamento; só o total do vendedor é arredondado para centavos.
+      </p>
+    </section>
+  } @else {
+    <p class="estado">Carregando vendas…</p>
+  }
+
+  <details class="card editor">
+    <summary>Testar com outras vendas</summary>
+    <div class="card__corpo">
+      <p class="dica">
+        Edite o JSON (mesmo formato do arquivo de vendas) e recalcule. Bom para conferir os limites das
+        faixas, como 99,99, 100,00, 499,99 e 500,00.
+      </p>
+      <label class="sr-only" for="json-vendas">JSON de vendas</label>
+      <textarea id="json-vendas" rows="14" spellcheck="false" [formControl]="json"></textarea>
+      @if (erroJson(); as mensagem) {
+        <div class="alerta" role="alert">{{ mensagem }}</div>
+      }
+      <div class="acoes">
+        <button
+          type="button"
+          class="botao botao--primario"
+          [disabled]="calculando()"
+          (click)="calcularComJson()"
+        >
+          {{ calculando() ? 'Calculando…' : 'Calcular comissões' }}
+        </button>
+        <button type="button" class="botao botao--secundario" (click)="restaurarVendasOriginais()">
+          Restaurar vendas originais
+        </button>
+      </div>
+    </div>
+  </details>
+</div>

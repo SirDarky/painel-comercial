@@ -1,0 +1,203 @@
+<div class="pagina">
+  <header class="cabecalho">
+    <span class="sobretitulo">Depósito</span>
+    <h1>Movimentação de estoque</h1>
+    <p>
+      Lance entradas e saídas de mercadoria no depósito. Cada movimentação recebe um número único e
+      uma descrição, e a API devolve o estoque final do produto movimentado. Tudo fica gravado em
+      um banco SQLite.
+    </p>
+  </header>
+
+  @if (erroCarregamento(); as mensagem) {
+    <div class="alerta" role="alert">{{ mensagem }}</div>
+  } @else if (!carregado()) {
+    <p class="estado">Carregando estoque…</p>
+  } @else {
+    <div class="grade">
+      <section class="card">
+        <header class="card__cabecalho"><h2>Nova movimentação</h2></header>
+
+        <form class="card__corpo" [formGroup]="form" (ngSubmit)="lancar()">
+          <div class="campo">
+            <label for="produto">Produto</label>
+            <select id="produto" formControlName="codigoProduto">
+              @for (produto of produtos(); track produto.codigoProduto) {
+                <option [ngValue]="produto.codigoProduto">
+                  {{ produto.codigoProduto }} · {{ produto.descricaoProduto }}
+                </option>
+              }
+            </select>
+            @if (produtoSelecionado(); as produto) {
+              <span class="dica">Estoque atual: {{ produto.estoque | number }} un.</span>
+            }
+          </div>
+
+          <fieldset class="campo">
+            <legend>Tipo</legend>
+            <div class="tipo">
+              <label class="tipo__opcao tipo__opcao--entrada">
+                <input type="radio" formControlName="tipo" value="Entrada" />
+                Entrada
+              </label>
+              <label class="tipo__opcao tipo__opcao--saida">
+                <input type="radio" formControlName="tipo" value="Saida" />
+                Saída
+              </label>
+            </div>
+          </fieldset>
+
+          <div class="campo">
+            <label for="quantidade">Quantidade</label>
+            <input
+              id="quantidade"
+              type="number"
+              min="1"
+              max="1000000"
+              step="1"
+              inputmode="numeric"
+              formControlName="quantidade"
+            />
+            @let quantidade = form.controls.quantidade;
+            @if (quantidade.touched && quantidade.hasError('inteiro')) {
+              <span class="erro-campo">Informe uma quantidade inteira, sem casas decimais.</span>
+            } @else if (quantidade.touched && quantidade.hasError('max')) {
+              <span class="erro-campo">A quantidade máxima por movimentação é 1.000.000.</span>
+            } @else if (quantidade.touched && quantidade.invalid) {
+              <span class="erro-campo">Informe uma quantidade maior que zero.</span>
+            } @else if (saidaMaiorQueEstoque()) {
+              <span class="erro-campo">
+                A saída não pode ser maior que o estoque atual
+                ({{ produtoSelecionado()?.estoque | number }} un.).
+              </span>
+            }
+          </div>
+
+          <div class="campo">
+            <label for="descricao">Descrição</label>
+            <input
+              id="descricao"
+              type="text"
+              maxlength="200"
+              autocomplete="off"
+              list="sugestoes-descricao"
+              placeholder="Ex.: {{ sugestoes()[0] }}"
+              formControlName="descricao"
+            />
+            <datalist id="sugestoes-descricao">
+              @for (sugestao of sugestoes(); track sugestao) {
+                <option [value]="sugestao"></option>
+              }
+            </datalist>
+            @if (form.controls.descricao.touched && form.controls.descricao.invalid) {
+              <span class="erro-campo">Descreva a movimentação (ex.: compra, venda, avaria).</span>
+            }
+          </div>
+
+          @if (erro(); as mensagem) {
+            <div class="alerta" role="alert">{{ mensagem }}</div>
+          }
+
+          <button type="submit" class="botao botao--primario" [disabled]="salvando()">
+            {{ salvando() ? 'Lançando…' : 'Lançar movimentação' }}
+          </button>
+        </form>
+      </section>
+
+      <div class="coluna">
+        @if (ultimaMovimentacao(); as movimentacao) {
+          <section class="card resultado" role="status">
+            <div>
+              <span class="resultado__titulo">Movimentação nº {{ movimentacao.id }} registrada</span>
+              <span class="resultado__detalhe">
+                {{ rotuloTipo(movimentacao.tipo) }} de {{ movimentacao.quantidade | number }} un. ·
+                {{ movimentacao.descricaoProduto }}
+              </span>
+              <span class="resultado__detalhe">{{ movimentacao.descricao }}</span>
+            </div>
+            <div class="resultado__estoque">
+              <span>Estoque final</span>
+              <strong>{{ movimentacao.estoqueFinal | number }}</strong>
+              <small>antes: {{ movimentacao.estoqueAnterior | number }}</small>
+            </div>
+          </section>
+        }
+
+        <section class="card">
+          <header class="card__cabecalho"><h2>Estoque atual</h2></header>
+          <div class="tabela">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Código</th>
+                  <th scope="col">Produto</th>
+                  <th scope="col" class="num">Estoque</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (produto of produtos(); track produto.codigoProduto) {
+                  <tr [class.atualizado]="produto.codigoProduto === ultimaMovimentacao()?.codigoProduto">
+                    <td class="codigo">{{ produto.codigoProduto }}</td>
+                    <td>{{ produto.descricaoProduto }}</td>
+                    <td class="num"><strong>{{ produto.estoque | number }}</strong></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="card">
+      <header class="card__cabecalho">
+        <h2>Histórico de movimentações</h2>
+        <span class="badge">{{ movimentacoes().length }} lançamento(s)</span>
+      </header>
+      <div class="tabela">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col" class="num">Nº</th>
+              <th scope="col">Data e hora</th>
+              <th scope="col">Produto</th>
+              <th scope="col">Tipo</th>
+              <th scope="col">Descrição</th>
+              <th scope="col" class="num">Qtde</th>
+              <th scope="col" class="num">Estoque</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (movimentacao of movimentacoes(); track movimentacao.id) {
+              <tr>
+                <td class="num">{{ movimentacao.id }}</td>
+                <td class="data">{{ movimentacao.dataHora | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
+                <td>{{ movimentacao.codigoProduto }} · {{ movimentacao.descricaoProduto }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge--positivo]="movimentacao.tipo === 'Entrada'"
+                    [class.badge--negativo]="movimentacao.tipo === 'Saida'"
+                    >{{ rotuloTipo(movimentacao.tipo) }}</span
+                  >
+                </td>
+                <td>{{ movimentacao.descricao }}</td>
+                <td class="num">
+                  {{ movimentacao.tipo === 'Entrada' ? '+' : '−' }}{{ movimentacao.quantidade | number }}
+                </td>
+                <td class="num">
+                  {{ movimentacao.estoqueAnterior | number }} →
+                  <strong>{{ movimentacao.estoqueFinal | number }}</strong>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="vazio">Nenhuma movimentação lançada ainda.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</div>

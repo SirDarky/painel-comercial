@@ -1,0 +1,133 @@
+.faixas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.faixas li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.indicador {
+  display: grid;
+  gap: 2px;
+  padding: 16px 18px;
+}
+
+.indicador span {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.indicador strong {
+  font-size: 1.4rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.indicador--destaque {
+  border-color: color-mix(in srgb, var(--positive) 40%, var(--border));
+}
+
+.indicador--destaque strong {
+  color: var(--positive);
+}
+
+.expandir {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.expandir:hover {
+  color: var(--accent);
+}
+
+.seta {
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.2s;
+}
+
+.expandir[aria-expanded='true'] .seta {
+  transform: rotate(45deg);
+}
+
+.detalhe > td {
+  padding: 4px 20px 16px 44px;
+  background: var(--surface-muted);
+}
+
+.detalhe table {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  background: var(--surface);
+  font-size: 0.9rem;
+}
+
+.detalhe th,
+.detalhe td {
+  padding: 6px 14px;
+}
+
+.editor summary {
+  padding: 14px 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.editor[open] summary {
+  border-bottom: 1px solid var(--border);
+}
+
+.editor textarea {
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 720px) {
+  .indicadores {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .detalhe > td {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}

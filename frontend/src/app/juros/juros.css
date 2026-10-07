@@ -1,0 +1,52 @@
+.grade {
+  display: grid;
+  grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.linhas {
+  display: grid;
+  margin: 0;
+  padding: 8px 20px;
+}
+
+.linhas > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.linhas > div:last-child {
+  border-bottom: 0;
+}
+
+.linhas dt {
+  color: var(--text-muted);
+}
+
+.linhas dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.linhas__juros dd {
+  color: var(--negative);
+}
+
+.linhas__total dt,
+.linhas__total dd {
+  color: var(--text);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+@media (max-width: 860px) {
+  .grade {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

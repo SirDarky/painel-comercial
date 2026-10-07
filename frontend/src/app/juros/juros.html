@@ -1,0 +1,111 @@
+<div class="pagina">
+  <header class="cabecalho">
+    <span class="sobretitulo">Financeiro</span>
+    <h1>Juros por atraso</h1>
+    <p>
+      Informe o valor e a data de vencimento. A API calcula os juros até hoje com multa de 2,5% ao
+      dia de atraso (juros simples sobre o valor original).
+    </p>
+  </header>
+
+  <div class="grade">
+    <section class="card">
+      <header class="card__cabecalho"><h2>Dados do título</h2></header>
+
+      <form class="card__corpo" [formGroup]="form" (ngSubmit)="calcular()">
+        <div class="campo">
+          <label for="valor">Valor (R$)</label>
+          <input
+            id="valor"
+            type="number"
+            min="0.01"
+            max="1000000000000"
+            step="0.01"
+            inputmode="decimal"
+            placeholder="0,00"
+            formControlName="valor"
+          />
+          @if (form.controls.valor.touched && form.controls.valor.hasError('max')) {
+            <span class="erro-campo">O valor máximo é R$ 1.000.000.000.000,00.</span>
+          } @else if (form.controls.valor.touched && form.controls.valor.invalid) {
+            <span class="erro-campo">Informe um valor maior que zero.</span>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="vencimento">Data de vencimento</label>
+          <input id="vencimento" type="date" formControlName="dataVencimento" />
+          @if (form.controls.dataVencimento.touched && form.controls.dataVencimento.invalid) {
+            <span class="erro-campo">Informe a data de vencimento.</span>
+          } @else {
+            <span class="dica">Os juros são calculados até hoje, pelo horário de Brasília.</span>
+          }
+        </div>
+
+        @if (erro(); as mensagem) {
+          <div class="alerta" role="alert">{{ mensagem }}</div>
+        }
+
+        <button type="submit" class="botao botao--primario" [disabled]="calculando()">
+          {{ calculando() ? 'Calculando…' : 'Calcular juros' }}
+        </button>
+      </form>
+    </section>
+
+    <section class="card" aria-live="polite">
+      @if (resultado(); as r) {
+        <header class="card__cabecalho">
+          <h2>Resultado em {{ r.dataCalculo | date: 'dd/MM/yyyy' }}</h2>
+          @if (r.diasAtraso > 0) {
+            <span class="badge badge--negativo">
+              Vencido há {{ r.diasAtraso }} {{ r.diasAtraso === 1 ? 'dia' : 'dias' }}
+            </span>
+          } @else if (r.dataVencimento === r.dataCalculo) {
+            <span class="badge badge--destaque">Vence hoje</span>
+          } @else {
+            <span class="badge badge--positivo">Em dia</span>
+          }
+        </header>
+
+        <dl class="linhas">
+          <div>
+            <dt>Valor original</dt>
+            <dd>{{ r.valor | currency }}</dd>
+          </div>
+          <div>
+            <dt>Vencimento</dt>
+            <dd>{{ r.dataVencimento | date: 'dd/MM/yyyy' }}</dd>
+          </div>
+          <div>
+            <dt>Dias em atraso</dt>
+            <dd>{{ r.diasAtraso }}</dd>
+          </div>
+          <div>
+            <dt>Multa ao dia</dt>
+            <dd>{{ r.percentualDiario | number: '1.0-2' }}%</dd>
+          </div>
+          <div>
+            <dt>Percentual acumulado</dt>
+            <dd>{{ r.percentualTotal | number: '1.0-2' }}%</dd>
+          </div>
+          <div [class.linhas__juros]="r.valorJuros > 0">
+            <dt>Juros</dt>
+            <dd>{{ r.valorJuros | currency }}</dd>
+          </div>
+          <div class="linhas__total">
+            <dt>Valor atualizado</dt>
+            <dd>{{ r.valorAtualizado | currency }}</dd>
+          </div>
+        </dl>
+
+        <p class="card__rodape">
+          {{ r.valor | currency }} × {{ r.percentualDiario | number: '1.0-2' }}% ×
+          {{ r.diasAtraso }} {{ r.diasAtraso === 1 ? 'dia' : 'dias' }} =
+          <strong>{{ r.valorJuros | currency }}</strong>
+        </p>
+      } @else {
+        <p class="estado">O resultado aparece aqui.</p>
+      }
+    </section>
+  </div>
+</div>

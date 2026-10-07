@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PainelComercial.Api/PainelComercial.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PainelComercial.Tests/PainelComercial.Tests.csproj" />
+  </Folder>
+</Solution>
